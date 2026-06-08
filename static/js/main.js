@@ -146,17 +146,20 @@ function getStatus(item, quote) {
     const diff = price - target;
     const diffPct = (diff / target) * 100;
 
+    // 临界阈值：0.01元（低价股适用）
+    const threshold = 0.01;
+
     if (direction === 'below') {
         if (price <= target) return { class: 'status-alert', text: '已跌破' };
-        if (diffPct < 0.01) return { class: 'status-warning', text: '临界' };
+        if (diff <= threshold) return { class: 'status-warning', text: '临界' };
         return { class: 'status-safe', text: '安全' };
     } else if (direction === 'above') {
         if (price >= target) return { class: 'status-alert', text: '已涨破' };
-        if (diffPct > -0.01) return { class: 'status-warning', text: '临界' };
+        if (-diff <= threshold) return { class: 'status-warning', text: '临界' };
         return { class: 'status-safe', text: '安全' };
     } else {
         if (price <= target || price >= target) return { class: 'status-alert', text: '已触发' };
-        if (Math.abs(diffPct) < 0.01) return { class: 'status-warning', text: '临界' };
+        if (Math.abs(diff) <= threshold) return { class: 'status-warning', text: '临界' };
         return { class: 'status-safe', text: '安全' };
     }
 }
