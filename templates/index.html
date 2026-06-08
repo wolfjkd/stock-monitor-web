@@ -136,8 +136,11 @@
             top: 0;
             z-index: 1;
             padding: 4px 6px;
+            border-right: 1px solid #dee2e6;
         }
-        .config-table td { padding: 3px 6px; vertical-align: middle; }
+        .config-table th:last-child { border-right: none; }
+        .config-table td { padding: 3px 6px; vertical-align: middle; border-right: 1px solid #eee; }
+        .config-table td:last-child { border-right: none; }
         .config-table .btn { padding: 1px 5px; font-size: 11px; }
         /* 股票分组背景色 */
         .config-table tr.stock-group-0 td { background: #ffffff; }
@@ -242,7 +245,7 @@
                 <div class="table-scroll">
                     <table class="table table-hover config-table">
                         <thead>
-                            <tr><th>股票</th><th>代码</th><th>涨跌幅</th><th>当前价</th><th>目标价</th><th>委托</th><th>状态</th><th>方向</th><th>操作</th></tr>
+                            <tr><th>股票</th><th>代码</th><th>涨跌幅</th><th>当前价</th><th>目标价</th><th>委托</th><th>状态</th><th>监控方向</th><th>操作</th></tr>
                         </thead>
                         <tbody id="configTableBody"></tbody>
                     </table>
