@@ -180,10 +180,15 @@
                 </h5>
             </div>
             <div class="col-md-6 text-end">
+                <div class="dropdown d-inline-block me-3">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="nodeDropdown" data-bs-toggle="dropdown">
+                        <i class="bi bi-hdd-stack"></i> 数据节点: <span id="currentNodeName">云行情郑州主站Z1</span>
+                    </button>
+                    <ul class="dropdown-menu" id="nodeList">
+                        <!-- 动态生成 -->
+                    </ul>
+                </div>
                 <span class="text-muted">
-                    <i class="bi bi-hdd-stack"></i> 数据源: <span id="dataSource">TDX郑州节点</span>
-                </span>
-                <span class="text-muted ms-3">
                     <i class="bi bi-clock"></i> 运行时长: <span id="uptime">--:--:--</span>
                 </span>
             </div>

@@ -1,0 +1,56 @@
+{
+  "nodes": [
+    {
+      "id": "zhengzhou_z1",
+      "name": "云行情郑州主站Z1",
+      "host": "182.118.8.4:7709",
+      "location": "郑州",
+      "priority": 1,
+      "status": "active",
+      "latency_ms": 3.5
+    },
+    {
+      "id": "shanghai_s1",
+      "name": "云行情上海主站S1",
+      "host": "119.147.212.81:7709",
+      "location": "上海",
+      "priority": 2,
+      "status": "active",
+      "latency_ms": 15
+    },
+    {
+      "id": "shenzhen_s1",
+      "name": "云行情深圳主站S1",
+      "host": "112.74.214.43:7709",
+      "location": "深圳",
+      "priority": 3,
+      "status": "active",
+      "latency_ms": 18
+    },
+    {
+      "id": "beijing_b1",
+      "name": "云行情北京主站B1",
+      "host": "106.14.195.133:7709",
+      "location": "北京",
+      "priority": 4,
+      "status": "active",
+      "latency_ms": 20
+    },
+    {
+      "id": "wuhan_w1",
+      "name": "云行情武汉主站W1",
+      "host": "119.97.185.51:7709",
+      "location": "武汉",
+      "priority": 5,
+      "status": "active",
+      "latency_ms": 25
+    }
+  ],
+  "settings": {
+    "default_node": "zhengzhou_z1",
+    "auto_failover": true,
+    "failover_threshold_ms": 100,
+    "max_retries": 3,
+    "health_check_interval_s": 30
+  }
+}
