@@ -1,0 +1,19 @@
+{
+  "alerts": [
+    { "code": "sh601398", "dir": "below", "name": "工商银行", "note": "示例组A-融资买入", "position": "多仓", "target": 7.15 },
+    { "code": "sh601398", "dir": "below", "name": "工商银行", "note": "示例组A-融资买入", "position": "多仓", "target": 7.10 },
+    { "code": "sh601398", "dir": "below", "name": "工商银行", "note": "示例组A-融资买入", "position": "多仓", "target": 7.05 },
+    { "code": "sh601398", "dir": "above", "name": "工商银行", "note": "示例组A-现金卖出", "position": "空仓", "target": 7.30 },
+    { "code": "sh601398", "dir": "above", "name": "工商银行", "note": "示例组A-现金卖出", "position": "空仓", "target": 7.35 },
+    { "code": "sh601988", "dir": "below", "name": "中国银行", "note": "示例组B-融资买入", "position": "多仓", "target": 5.40 },
+    { "code": "sh601988", "dir": "below", "name": "中国银行", "note": "示例组B-融资买入", "position": "多仓", "target": 5.35 },
+    { "code": "sh601988", "dir": "above", "name": "中国银行", "note": "示例组B-现金卖出", "position": "空仓", "target": 5.55 },
+    { "code": "sh601988", "dir": "above", "name": "中国银行", "note": "示例组B-现金卖出", "position": "空仓", "target": 5.60 },
+    { "code": "sh600028", "dir": "below", "name": "中国石化", "note": "示例组C-融资买入", "position": "多仓", "target": 6.20 },
+    { "code": "sh600028", "dir": "above", "name": "中国石化", "note": "示例组C-现金卖出", "position": "空仓", "target": 6.35 },
+    { "code": "sh601857", "dir": "below", "name": "中国石油", "note": "示例组C-融资买入", "position": "多仓", "target": 8.40 },
+    { "code": "sh601857", "dir": "above", "name": "中国石油", "note": "示例组C-现金卖出", "position": "空仓", "target": 8.55 }
+  ],
+  "interval": 5,
+  "source": "tdx"
+}
