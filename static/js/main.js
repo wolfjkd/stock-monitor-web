@@ -84,8 +84,8 @@ function renderConfigTable() {
     if (!currentConfig || !currentConfig.alerts || currentConfig.alerts.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-muted py-4">
-                    <i class="bi bi-inbox"></i> 暂无监控股票，点击"添加股票"开始
+                <td colspan="8" class="text-center text-muted py-4">
+                    <i class="bi bi-inbox"></i> 暂无监控股票，点击"添加"开始
                 </td>
             </tr>
         `;
@@ -97,6 +97,9 @@ function renderConfigTable() {
         const price = quote ? quote.price : '--';
         const changePct = quote ? quote.changePct : null;
         const status = getStatus(item, quote);
+        const dir = item.dir || 'below';
+        const dirLabel = dir === 'below' ? '跌破' : dir === 'above' ? '涨破' : '双向';
+        const dirClass = dir === 'below' ? 'text-success' : dir === 'above' ? 'text-danger' : 'text-primary';
 
         return `
             <tr>
@@ -105,9 +108,10 @@ function renderConfigTable() {
                 <td class="${getPriceClass(changePct)}">${formatPrice(price)}</td>
                 <td>${formatPrice(item.target)}</td>
                 <td class="${getPriceClass(changePct)}">${formatChange(changePct)}</td>
-                <td><span class="status-badge ${status.class}">${status.text}</span></td>
+                <td><span class="${dirClass}" style="font-size:11px">${dirLabel}</span></td>
+                <td><span class="status-badge ${status.class}" style="font-size:10px">${status.text}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="editStock(${index})">
+                    <button class="btn btn-outline-primary" onclick="editStock(${index})">
                         <i class="bi bi-pencil"></i>
                     </button>
                 </td>
@@ -160,42 +164,36 @@ function renderStockCards() {
     const container = document.getElementById('stockCards');
     if (!currentConfig || !currentConfig.alerts) return;
 
-    container.innerHTML = currentConfig.alerts.map(item => {
+    // 按股票代码分组，只显示每个股票一次
+    const uniqueStocks = {};
+    currentConfig.alerts.forEach(item => {
+        if (!uniqueStocks[item.code]) {
+            uniqueStocks[item.code] = item;
+        }
+    });
+
+    container.innerHTML = Object.values(uniqueStocks).map(item => {
         const quote = window.quotesCache[item.code];
         if (!quote) {
             return `
-                <div class="col-md-4 col-lg-2 mb-3">
-                    <div class="card stock-card">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">${item.name || item.code}</h6>
-                            <div class="stock-price text-muted">--</div>
-                            <div class="stock-change text-muted">等待数据...</div>
-                        </div>
-                    </div>
+                <div class="quote-card">
+                    <div class="q-name">${item.name || item.code}</div>
+                    <div class="q-price stock-flat">--</div>
+                    <div class="q-change stock-flat">等待数据...</div>
                 </div>
             `;
         }
 
         const price = quote.price;
         const changePct = quote.changePct;
-        const status = getStatus(item, quote);
         const priceClass = getPriceClass(changePct);
 
         return `
-            <div class="col-md-4 col-lg-2 mb-3">
-                <div class="card stock-card">
-                    <div class="card-body text-center">
-                        <h6 class="card-title">${quote.name || item.name || item.code}</h6>
-                        <div class="stock-price ${priceClass}">¥${formatPrice(price)}</div>
-                        <div class="stock-change ${priceClass}">${formatChange(changePct)}</div>
-                        <div class="mt-2">
-                            <span class="status-badge ${status.class}">${status.text}</span>
-                        </div>
-                        <div class="mt-1 text-muted" style="font-size: 0.75rem;">
-                            目标: ¥${formatPrice(item.target)}
-                        </div>
-                    </div>
-                </div>
+            <div class="quote-card">
+                <div class="q-name">${quote.name || item.name || item.code}</div>
+                <div class="q-price ${priceClass}">¥${formatPrice(price)}</div>
+                <div class="q-change ${priceClass}">${formatChange(changePct)}</div>
+                <div class="q-target">目标: ¥${formatPrice(item.target)}</div>
             </div>
         `;
     }).join('');
@@ -243,13 +241,13 @@ function updateMonitorUI(data) {
 
     if (data.running) {
         statusDot.className = 'status-dot running';
-        statusText.textContent = '监控运行中';
+        statusText.textContent = '运行中';
         btnStart.disabled = true;
         btnStop.disabled = false;
         uptimeEl.textContent = data.uptime || '--:--:--';
     } else {
         statusDot.className = 'status-dot stopped';
-        statusText.textContent = '监控未启动';
+        statusText.textContent = '已停止';
         btnStart.disabled = false;
         btnStop.disabled = true;
         uptimeEl.textContent = '--:--:--';
