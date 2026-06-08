@@ -84,7 +84,7 @@ function renderConfigTable() {
     if (!currentConfig || !currentConfig.alerts || currentConfig.alerts.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-muted py-4">
+                <td colspan="9" class="text-center text-muted py-4">
                     <i class="bi bi-inbox"></i> 暂无监控股票，点击"添加"开始
                 </td>
             </tr>
@@ -111,6 +111,10 @@ function renderConfigTable() {
         const dirLabel = dir === 'below' ? '跌破' : dir === 'above' ? '涨破' : '双向';
         const dirClass = dir === 'below' ? 'text-success' : dir === 'above' ? 'text-danger' : 'text-primary';
 
+        // 委托方向
+        const position = item.position || '多仓';
+        const positionClass = position === '多仓' ? 'text-danger fw-bold' : 'text-success fw-bold';
+
         const groupClass = `stock-group-${stockGroups[item.code]}`;
         const isDivider = index > 0 && currentConfig.alerts[index - 1].code !== item.code;
         const alertClass = status.class === 'status-alert' ? 'alert-row' : status.class === 'status-warning' ? 'warning-row' : '';
@@ -124,6 +128,7 @@ function renderConfigTable() {
                 <td>${formatPrice(item.target)}</td>
                 <td class="${getPriceClass(changePct)}">${formatChange(changePct)}</td>
                 <td><span class="${dirClass}" style="font-size:11px">${dirLabel}</span></td>
+                <td><span class="${positionClass}" style="font-size:11px">${position}</span></td>
                 <td><span class="status-badge ${status.class}" style="font-size:10px">${status.text}</span></td>
                 <td>
                     <button class="btn btn-outline-primary" onclick="editStock(${index})">
