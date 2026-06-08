@@ -139,13 +139,24 @@
         }
         .config-table td { padding: 3px 6px; vertical-align: middle; }
         .config-table .btn { padding: 1px 5px; font-size: 11px; }
+        /* 股票分组背景色 */
+        .config-table tr.stock-group-0 td { background: #ffffff; }
+        .config-table tr.stock-group-1 td { background: #f0f7ff; }
+        .config-table tr.stock-group-2 td { background: #fff8f0; }
+        .config-table tr.stock-group-3 td { background: #f0fff0; }
+        .config-table tr.stock-group-4 td { background: #fff0f5; }
+        .config-table tr.stock-group-5 td { background: #f5f0ff; }
+        /* 分隔线 */
+        .config-table tr.stock-divider td {
+            border-top: 2px solid #dee2e6;
+        }
         /* 预警行闪烁 */
         @keyframes alertFlash {
             0%, 100% { background-color: #f8d7da; }
             50% { background-color: #ff6b6b; color: #fff; }
         }
-        .config-table tr.alert-row { animation: alertFlash 1s ease-in-out 3; }
-        .config-table tr.warning-row { background-color: #fff3cd; }
+        .config-table tr.alert-row td { animation: alertFlash 1s ease-in-out 3; }
+        .config-table tr.warning-row td { background-color: #fff3cd !important; }
         /* 行情卡片预警 */
         @keyframes cardFlash {
             0%, 100% { background: #fff; border-color: transparent; }
