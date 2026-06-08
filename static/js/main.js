@@ -17,6 +17,9 @@ let currentConfig = null;
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 获取版本号
+    loadVersion();
+
     // 加载配置
     loadConfig();
 
@@ -36,6 +39,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 // API调用函数
 // ============================================================
+
+async function loadVersion() {
+    const result = await apiCall('/api/version');
+    if (result.success) {
+        document.getElementById('versionBadge').textContent = 'v' + result.version;
+    }
+}
 
 async function apiCall(url, method = 'GET', body = null) {
     const options = {

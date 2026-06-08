@@ -23,6 +23,11 @@ from price_alert import (
 app = Flask(__name__)
 
 # ============================================================
+# 版本号
+# ============================================================
+VERSION = "3.0"
+
+# ============================================================
 # 全局状态
 # ============================================================
 
@@ -185,6 +190,12 @@ def monitor_loop():
 def index():
     """主页"""
     return render_template('index.html')
+
+
+@app.route('/api/version')
+def api_version():
+    """获取版本号"""
+    return jsonify({'success': True, 'version': VERSION})
 
 
 @app.route('/api/quotes')
