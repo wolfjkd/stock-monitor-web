@@ -101,8 +101,10 @@ function renderConfigTable() {
         const dirLabel = dir === 'below' ? '跌破' : dir === 'above' ? '涨破' : '双向';
         const dirClass = dir === 'below' ? 'text-success' : dir === 'above' ? 'text-danger' : 'text-primary';
 
+        const rowClass = status.class === 'status-alert' ? 'alert-row' : status.class === 'status-warning' ? 'warning-row' : '';
+
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td><strong>${item.name || item.code}</strong></td>
                 <td><code>${item.code}</code></td>
                 <td class="${getPriceClass(changePct)}">${formatPrice(price)}</td>
@@ -188,8 +190,17 @@ function renderStockCards() {
         const changePct = quote.changePct;
         const priceClass = getPriceClass(changePct);
 
+        // 检查是否触发预警
+        const alertItems = currentConfig.alerts.filter(a => a.code === item.code);
+        let hasAlert = false;
+        for (const ai of alertItems) {
+            const s = getStatus(ai, quote);
+            if (s.class === 'status-alert') { hasAlert = true; break; }
+        }
+        const cardClass = hasAlert ? 'quote-card alert-active' : 'quote-card';
+
         return `
-            <div class="quote-card">
+            <div class="${cardClass}">
                 <div class="q-name">${quote.name || item.name || item.code}</div>
                 <div class="q-price ${priceClass}">¥${formatPrice(price)}</div>
                 <div class="q-change ${priceClass}">${formatChange(changePct)}</div>

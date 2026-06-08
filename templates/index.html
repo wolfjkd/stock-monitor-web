@@ -139,6 +139,19 @@
         }
         .config-table td { padding: 3px 6px; vertical-align: middle; }
         .config-table .btn { padding: 1px 5px; font-size: 11px; }
+        /* 预警行闪烁 */
+        @keyframes alertFlash {
+            0%, 100% { background-color: #f8d7da; }
+            50% { background-color: #ff6b6b; color: #fff; }
+        }
+        .config-table tr.alert-row { animation: alertFlash 1s ease-in-out 3; }
+        .config-table tr.warning-row { background-color: #fff3cd; }
+        /* 行情卡片预警 */
+        @keyframes cardFlash {
+            0%, 100% { background: #fff; border-color: transparent; }
+            50% { background: #f8d7da; border: 2px solid #e74c3c; }
+        }
+        .quote-card.alert-active { animation: cardFlash 1s ease-in-out 3; }
 
         /* 预警日志 */
         .alert-panel {
