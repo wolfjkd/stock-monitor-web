@@ -15,7 +15,10 @@ from flask import Flask, render_template, jsonify, request, Response
 
 # 添加scripts目录到路径，复用CLI版核心代码
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'scripts'))
-from price_alert import get_quote_tdx, get_quote_tencent, close_tdx_client
+from price_alert import (
+    get_quote_tdx, get_quote_tencent, close_tdx_client,
+    get_current_node_info, get_available_nodes, TDX_NODES
+)
 
 app = Flask(__name__)
 
@@ -269,15 +272,75 @@ def api_monitor_status():
     if monitor_state['running'] and monitor_state['start_time']:
         uptime = str(datetime.datetime.now() - monitor_state['start_time']).split('.')[0]
 
+    # 获取当前节点信息
+    node_info = get_current_node_info()
+
     return jsonify({
         'success': True,
         'data': {
             'running': monitor_state['running'],
             'start_time': monitor_state['start_time'].strftime('%H:%M:%S') if monitor_state['start_time'] else None,
             'uptime': uptime,
-            'source': monitor_state.get('source', 'tdx')
+            'source': monitor_state.get('source', 'tdx'),
+            'current_node': node_info
         }
     })
+
+
+@app.route('/api/nodes')
+def api_nodes():
+    """获取所有TDX节点信息"""
+    nodes = []
+    current_node = get_current_node_info()
+    available = get_available_nodes()
+    available_hosts = {n['host'] for n in available}
+
+    for node in TDX_NODES:
+        nodes.append({
+            **node,
+            'is_current': node['host'] == current_node.get('host'),
+            'is_available': node['host'] in available_hosts
+        })
+
+    return jsonify({
+        'success': True,
+        'data': {
+            'nodes': nodes,
+            'current': current_node
+        }
+    })
+
+
+@app.route('/api/nodes/switch', methods=['POST'])
+def api_switch_node():
+    """切换TDX节点"""
+    node_id = request.json.get('node_id')
+    if not node_id:
+        return jsonify({'success': False, 'error': 'Missing node_id'}), 400
+
+    # 查找目标节点
+    target_node = None
+    for node in TDX_NODES:
+        if node['id'] == node_id:
+            target_node = node
+            break
+
+    if not target_node:
+        return jsonify({'success': False, 'error': 'Node not found'}), 404
+
+    # 关闭当前连接，切换到新节点
+    close_tdx_client()
+    try:
+        from eltdx import Client
+        client = Client(host=target_node['host'])
+        client.close()
+        return jsonify({
+            'success': True,
+            'message': f'Switched to {target_node["name"]}',
+            'node': target_node
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Failed to connect: {str(e)}'}), 500
 
 
 @app.route('/api/alerts/stream')

@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 检查监控状态
     checkMonitorStatus();
 
+    // 加载节点列表
+    loadNodes();
+
     // 启动定时刷新行情
     refreshInterval = setInterval(refreshQuotes, 3000);
 
@@ -251,6 +254,11 @@ function updateMonitorUI(data) {
         btnStop.disabled = true;
         uptimeEl.textContent = '--:--:--';
     }
+
+    // 更新节点显示
+    if (data.current_node) {
+        updateCurrentNodeDisplay(data.current_node);
+    }
 }
 
 // ============================================================
@@ -391,6 +399,53 @@ function deleteStock() {
         currentConfig.alerts.splice(index, 1);
         saveConfig(currentConfig);
         bootstrap.Modal.getInstance(document.getElementById('editStockModal')).hide();
+    }
+}
+
+// ============================================================
+// 节点管理
+// ============================================================
+
+async function loadNodes() {
+    const result = await apiCall('/api/nodes');
+    if (result.success) {
+        renderNodeList(result.data.nodes);
+        updateCurrentNodeDisplay(result.data.current);
+    }
+}
+
+function renderNodeList(nodes) {
+    const nodeList = document.getElementById('nodeList');
+    nodeList.innerHTML = nodes.map(node => `
+        <li>
+            <a class="dropdown-item d-flex justify-content-between align-items-center ${node.is_current ? 'active' : ''} ${!node.is_available ? 'text-muted' : ''}"
+               href="#" onclick="switchNode('${node.id}')">
+                <span>
+                    <i class="bi bi-geo-alt"></i> ${node.name}
+                    <small class="text-muted">(${node.host})</small>
+                </span>
+                <span>
+                    ${node.is_current ? '<i class="bi bi-check-circle-fill text-success"></i>' : ''}
+                    ${!node.is_available ? '<i class="bi bi-x-circle-fill text-danger"></i>' : ''}
+                </span>
+            </a>
+        </li>
+    `).join('');
+}
+
+function updateCurrentNodeDisplay(node) {
+    if (node && node.name) {
+        document.getElementById('currentNodeName').textContent = node.name;
+    }
+}
+
+async function switchNode(nodeId) {
+    const result = await apiCall('/api/nodes/switch', 'POST', { node_id: nodeId });
+    if (result.success) {
+        showToast(`已切换到 ${result.node.name}`, 'success');
+        loadNodes(); // 刷新节点列表
+    } else {
+        showToast('切换失败: ' + (result.error || '未知错误'), 'danger');
     }
 }
 

@@ -36,33 +36,89 @@ import threading
 SCRIPT_DIR = None
 
 # ============================================================
-# 默认通达信服务器：云行情郑州主站（3.5ms TCP握手）
+# TDX节点配置（多节点故障转移）
 # ============================================================
+
+# 节点列表（按优先级排序）
+TDX_NODES = [
+    {'id': 'zhengzhou_z1', 'name': '云行情郑州主站Z1', 'host': '182.118.8.4:7709', 'priority': 1},
+    {'id': 'shanghai_s1', 'name': '云行情上海主站S1', 'host': '119.147.212.81:7709', 'priority': 2},
+    {'id': 'shenzhen_s1', 'name': '云行情深圳主站S1', 'host': '112.74.214.43:7709', 'priority': 3},
+    {'id': 'beijing_b1', 'name': '云行情北京主站B1', 'host': '106.14.195.133:7709', 'priority': 4},
+    {'id': 'wuhan_w1', 'name': '云行情武汉主站W1', 'host': '119.97.185.51:7709', 'priority': 5},
+]
+
+# 默认节点（郑州主站，延迟最低）
 DEFAULT_TDX_HOST = '182.118.8.4:7709'
+DEFAULT_TDX_NODE_NAME = '云行情郑州主站Z1'
 
 # 全局eltdx客户端（连接复用）
 _tdx_client = None
+_current_node = None
+_failed_nodes = set()
 
 
 def get_tdx_client(host=None):
-    """获取或创建eltdx客户端（单例，连接复用）"""
-    global _tdx_client
+    """获取或创建eltdx客户端（单例，连接复用，支持故障转移）"""
+    global _tdx_client, _current_node
+
+    # 如果指定了host且当前连接不是该host，重新连接
+    if host and _current_node != host:
+        close_tdx_client()
+
     if _tdx_client is not None:
         return _tdx_client
+
     from eltdx import Client
-    _tdx_client = Client(host=host or DEFAULT_TDX_HOST)
-    return _tdx_client
+
+    # 如果指定了host，直接连接
+    if host:
+        _tdx_client = Client(host=host)
+        _current_node = host
+        return _tdx_client
+
+    # 否则按优先级选择节点
+    for node in TDX_NODES:
+        if node['host'] in _failed_nodes:
+            continue
+        try:
+            _tdx_client = Client(host=node['host'])
+            _current_node = node['host']
+            print(f'[TDX] Connected to {node["name"]} ({node["host"]})')
+            return _tdx_client
+        except Exception as e:
+            print(f'[TDX] Failed to connect {node["name"]}: {e}')
+            _failed_nodes.add(node['host'])
+
+    # 所有节点都失败，重置并重试第一个
+    _failed_nodes.clear()
+    raise ConnectionError('All TDX nodes failed')
 
 
 def close_tdx_client():
     """关闭eltdx连接"""
-    global _tdx_client
+    global _tdx_client, _current_node
     if _tdx_client is not None:
         try:
             _tdx_client.close()
         except Exception:
             pass
         _tdx_client = None
+        _current_node = None
+
+
+def get_current_node_info():
+    """获取当前连接的节点信息"""
+    if _current_node:
+        for node in TDX_NODES:
+            if node['host'] == _current_node:
+                return node
+    return {'id': 'unknown', 'name': '未连接', 'host': 'N/A'}
+
+
+def get_available_nodes():
+    """获取所有可用节点列表"""
+    return [n for n in TDX_NODES if n['host'] not in _failed_nodes]
 
 
 def show_popup(title, message):
