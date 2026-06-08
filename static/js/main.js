@@ -148,15 +148,15 @@ function getStatus(item, quote) {
 
     if (direction === 'below') {
         if (price <= target) return { class: 'status-alert', text: '已跌破' };
-        if (diffPct < 2) return { class: 'status-warning', text: '临界' };
+        if (diffPct < 0.01) return { class: 'status-warning', text: '临界' };
         return { class: 'status-safe', text: '安全' };
     } else if (direction === 'above') {
         if (price >= target) return { class: 'status-alert', text: '已涨破' };
-        if (diffPct > -2) return { class: 'status-warning', text: '临界' };
+        if (diffPct > -0.01) return { class: 'status-warning', text: '临界' };
         return { class: 'status-safe', text: '安全' };
     } else {
         if (price <= target || price >= target) return { class: 'status-alert', text: '已触发' };
-        if (Math.abs(diffPct) < 2) return { class: 'status-warning', text: '临界' };
+        if (Math.abs(diffPct) < 0.01) return { class: 'status-warning', text: '临界' };
         return { class: 'status-safe', text: '安全' };
     }
 }
