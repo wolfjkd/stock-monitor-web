@@ -92,6 +92,16 @@ function renderConfigTable() {
         return;
     }
 
+    // 给每只股票分配一个分组索引（用于背景色）
+    const stockGroups = {};
+    let groupIndex = 0;
+    currentConfig.alerts.forEach(item => {
+        if (!(item.code in stockGroups)) {
+            stockGroups[item.code] = groupIndex % 6; // 6种颜色循环
+            groupIndex++;
+        }
+    });
+
     tbody.innerHTML = currentConfig.alerts.map((item, index) => {
         const quote = window.quotesCache ? window.quotesCache[item.code] : null;
         const price = quote ? quote.price : '--';
@@ -101,7 +111,10 @@ function renderConfigTable() {
         const dirLabel = dir === 'below' ? '跌破' : dir === 'above' ? '涨破' : '双向';
         const dirClass = dir === 'below' ? 'text-success' : dir === 'above' ? 'text-danger' : 'text-primary';
 
-        const rowClass = status.class === 'status-alert' ? 'alert-row' : status.class === 'status-warning' ? 'warning-row' : '';
+        const groupClass = `stock-group-${stockGroups[item.code]}`;
+        const isDivider = index > 0 && currentConfig.alerts[index - 1].code !== item.code;
+        const alertClass = status.class === 'status-alert' ? 'alert-row' : status.class === 'status-warning' ? 'warning-row' : '';
+        const rowClass = `${groupClass} ${isDivider ? 'stock-divider' : ''} ${alertClass}`;
 
         return `
             <tr class="${rowClass}">
