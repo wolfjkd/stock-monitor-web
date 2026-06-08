@@ -1,43 +1,167 @@
 {
   "alerts": [
     {
-      "code": "sh601868",
+      "code": "sh603077",
+      "name": "和邦生物",
+      "target": 2.26,
       "dir": "below",
-      "name": "中国能建",
-      "target": 2.9
-    },
-    {
-      "code": "sh600170",
-      "dir": "both",
-      "name": "上海建工",
-      "target": 2.42
+      "note": "喜总-融资买入"
     },
     {
       "code": "sh603077",
-      "dir": "below",
       "name": "和邦生物",
-      "target": 2
+      "target": 2.25,
+      "dir": "below",
+      "note": "喜总-融资买入"
+    },
+    {
+      "code": "sh603077",
+      "name": "和邦生物",
+      "target": 2.24,
+      "dir": "below",
+      "note": "喜总-融资买入"
+    },
+    {
+      "code": "sh603077",
+      "name": "和邦生物",
+      "target": 2.36,
+      "dir": "above",
+      "note": "喜总-现金卖出"
+    },
+    {
+      "code": "sh603077",
+      "name": "和邦生物",
+      "target": 2.35,
+      "dir": "above",
+      "note": "喜总-现金卖出"
+    },
+    {
+      "code": "sh603077",
+      "name": "和邦生物",
+      "target": 2.34,
+      "dir": "above",
+      "note": "喜总-现金卖出"
+    },
+    {
+      "code": "sh603077",
+      "name": "和邦生物",
+      "target": 2.33,
+      "dir": "above",
+      "note": "喜总-现金卖出"
+    },
+    {
+      "code": "sh600170",
+      "name": "上海建工",
+      "target": 2.42,
+      "dir": "below",
+      "note": "SW刘总-融资买入"
+    },
+    {
+      "code": "sh600170",
+      "name": "上海建工",
+      "target": 2.41,
+      "dir": "below",
+      "note": "SW刘总-融资买入"
+    },
+    {
+      "code": "sh600170",
+      "name": "上海建工",
+      "target": 2.40,
+      "dir": "below",
+      "note": "SW刘总-融资买入"
+    },
+    {
+      "code": "sh600170",
+      "name": "上海建工",
+      "target": 2.39,
+      "dir": "below",
+      "note": "SW刘总-融资买入"
+    },
+    {
+      "code": "sh600170",
+      "name": "上海建工",
+      "target": 2.46,
+      "dir": "above",
+      "note": "SW刘总-现金卖出"
+    },
+    {
+      "code": "sh600170",
+      "name": "上海建工",
+      "target": 2.47,
+      "dir": "above",
+      "note": "SW刘总-现金卖出"
+    },
+    {
+      "code": "sh600170",
+      "name": "上海建工",
+      "target": 2.48,
+      "dir": "above",
+      "note": "SW刘总-现金卖出"
+    },
+    {
+      "code": "sh601868",
+      "name": "中国能建",
+      "target": 2.77,
+      "dir": "below",
+      "note": "稳健9-融资买入"
+    },
+    {
+      "code": "sh601868",
+      "name": "中国能建",
+      "target": 2.76,
+      "dir": "below",
+      "note": "稳健9-融资买入"
+    },
+    {
+      "code": "sh601868",
+      "name": "中国能建",
+      "target": 2.75,
+      "dir": "below",
+      "note": "稳健9-融资买入"
+    },
+    {
+      "code": "sh601868",
+      "name": "中国能建",
+      "target": 2.74,
+      "dir": "below",
+      "note": "稳健9-融资买入"
     },
     {
       "code": "sh601390",
-      "dir": "below",
       "name": "中国中铁",
-      "target": 5.8
+      "target": 4.50,
+      "dir": "below",
+      "note": "稳健9-融资买入"
     },
     {
-      "code": "sz000061",
+      "code": "sh601390",
+      "name": "中国中铁",
+      "target": 4.49,
       "dir": "below",
-      "name": "农产品",
-      "target": 6.5
+      "note": "稳健9-融资买入"
     },
     {
-      "code": "sz000560",
+      "code": "sh601390",
+      "name": "中国中铁",
+      "target": 4.48,
       "dir": "below",
-      "name": "我爱我家",
-      "target": 2.6
+      "note": "稳健9-融资买入"
+    },
+    {
+      "code": "sh601390",
+      "name": "中国中铁",
+      "target": 4.58,
+      "dir": "above",
+      "note": "稳健9-现金卖出"
+    },
+    {
+      "code": "sh601390",
+      "name": "中国中铁",
+      "target": 4.59,
+      "dir": "above",
+      "note": "稳健9-现金卖出"
     }
   ],
   "interval": 5,
-  "log": "reports/price_alert_watchlist.txt",
   "source": "tdx"
 }

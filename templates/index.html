@@ -4,342 +4,286 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A股价格预警监控系统 v3.0</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
-            --stock-up: #e74c3c;    /* 红色 - 上涨 */
-            --stock-down: #2ecc71;   /* 绿色 - 下跌 */
-            --stock-flat: #95a5a6;   /* 灰色 - 平盘 */
+            --stock-up: #e74c3c;
+            --stock-down: #2ecc71;
+            --stock-flat: #95a5a6;
         }
-
-        body {
-            background-color: #f8f9fa;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        * { box-sizing: border-box; }
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            background: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 13px;
         }
-
-        .navbar-brand {
-            font-weight: 600;
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
-
-        .stock-card {
-            transition: all 0.3s ease;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        /* 顶栏 */
+        .top-bar {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
         }
-
-        .stock-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-        }
-
-        .stock-price {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        .stock-change {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .stock-up { color: var(--stock-up); }
-        .stock-down { color: var(--stock-down); }
-        .stock-flat { color: var(--stock-flat); }
-
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-        }
-
-        .status-safe { background-color: #d4edda; color: #155724; }
-        .status-warning { background-color: #fff3cd; color: #856404; }
-        .status-alert { background-color: #f8d7da; color: #721c24; }
-
-        .alert-log {
-            background-color: #1a1a2e;
-            color: #eee;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.85rem;
-            height: 300px;
-            overflow-y: auto;
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .alert-log .alert-item {
-            padding: 0.25rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .alert-log .alert-time { color: #6c757d; }
-        .alert-log .alert-message { color: #ffc107; }
-        .alert-log .alert-heartbeat { color: #6c757d; font-style: italic; }
-
-        .config-table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-
-        .btn-monitor {
-            min-width: 120px;
-        }
-
-        .monitor-status {
+        .top-bar .title { font-size: 15px; font-weight: 600; }
+        .top-bar .status-indicator {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 6px;
+            font-size: 12px;
         }
-
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px; height: 8px;
             border-radius: 50%;
             display: inline-block;
         }
+        .status-dot.running { background: #2ecc71; animation: pulse 2s infinite; }
+        .status-dot.stopped { background: #e74c3c; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+        .top-bar .btn { padding: 2px 10px; font-size: 12px; }
+        .info-text { color: #aaa; font-size: 11px; margin-right: 12px; }
 
-        .status-dot.running { background-color: #2ecc71; animation: pulse 2s infinite; }
-        .status-dot.stopped { background-color: #e74c3c; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 8px 12px;
+            gap: 8px;
+            overflow: hidden;
         }
 
-        .last-update {
-            font-size: 0.85rem;
-            color: #6c757d;
+        /* 行情卡片行 */
+        .quote-row {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
         }
-
-        .card-header {
-            font-weight: 600;
-        }
-
-        .empty-state {
+        .quote-card {
+            flex: 1;
+            background: #fff;
+            border-radius: 6px;
+            padding: 8px 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             text-align: center;
-            padding: 2rem;
-            color: #6c757d;
+            min-width: 0;
+        }
+        .quote-card .q-name { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+        .quote-card .q-price { font-size: 20px; font-weight: 700; }
+        .quote-card .q-change { font-size: 12px; font-weight: 600; }
+        .quote-card .q-target { font-size: 11px; color: #6c757d; }
+        .quote-card .q-status { font-size: 10px; padding: 1px 6px; border-radius: 3px; display: inline-block; margin-top: 2px; }
+        .stock-up { color: var(--stock-up); }
+        .stock-down { color: var(--stock-down); }
+        .stock-flat { color: var(--stock-flat); }
+        .status-safe { background: #d4edda; color: #155724; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .status-alert { background: #f8d7da; color: #721c24; }
+
+        /* 下半部分：表格+日志 */
+        .data-row {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            overflow: hidden;
+            min-height: 0;
         }
 
-        .modal .form-label {
-            font-weight: 500;
+        /* 监控配置表格 */
+        .config-panel {
+            flex: 3;
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
+        .panel-header {
+            padding: 6px 10px;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            background: #fafafa;
+        }
+        .panel-header .btn { padding: 1px 8px; font-size: 11px; }
+        .table-scroll {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .config-table {
+            font-size: 12px;
+            margin: 0;
+        }
+        .config-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            padding: 4px 6px;
+        }
+        .config-table td { padding: 3px 6px; vertical-align: middle; }
+        .config-table .btn { padding: 1px 5px; font-size: 11px; }
 
-        /* 自定义滚动条 */
-        .alert-log::-webkit-scrollbar {
-            width: 6px;
+        /* 预警日志 */
+        .alert-panel {
+            flex: 2;
+            background: #1a1a2e;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
+        .alert-panel .panel-header {
+            background: #16213e;
+            color: #eee;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .alert-panel .panel-header .btn { color: #aaa; border-color: #555; }
+        .alert-log {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #eee;
+        }
+        .alert-log .alert-item { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .alert-log .alert-time { color: #6c757d; }
+        .alert-log .alert-message { color: #ffc107; }
+        .alert-log .alert-heartbeat { color: #555; font-style: italic; }
+        .alert-log::-webkit-scrollbar { width: 4px; }
+        .alert-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+        .table-scroll::-webkit-scrollbar { width: 4px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
 
-        .alert-log::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-        }
-
-        .alert-log::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-        }
-
-        .alert-log::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.3);
-        }
+        /* 节点下拉 */
+        .node-dropdown .dropdown-toggle { font-size: 11px; padding: 1px 8px; }
+        .dropdown-menu { font-size: 12px; }
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="bi bi-graph-up-arrow"></i> A股价格预警监控系统
-                <span class="badge bg-primary ms-2">v3.0</span>
-            </a>
-            <div class="d-flex align-items-center">
-                <div class="monitor-status me-3">
-                    <span class="status-dot" id="statusDot"></span>
-                    <span id="monitorStatusText">监控未启动</span>
-                </div>
-                <button class="btn btn-success btn-monitor me-2" id="btnStart" onclick="startMonitor()">
-                    <i class="bi bi-play-fill"></i> 启动监控
+<div class="app-container">
+    <!-- 顶栏 -->
+    <div class="top-bar">
+        <div class="d-flex align-items-center">
+            <span class="title"><i class="bi bi-graph-up-arrow"></i> A股价格预警监控 v3.0</span>
+            <div class="node-dropdown ms-3 dropdown d-inline-block">
+                <button class="btn btn-sm btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-hdd-stack"></i> <span id="currentNodeName">云行情郑州主站Z1</span>
                 </button>
-                <button class="btn btn-danger btn-monitor" id="btnStop" onclick="stopMonitor()" disabled>
-                    <i class="bi bi-stop-fill"></i> 停止监控
-                </button>
+                <ul class="dropdown-menu" id="nodeList"></ul>
             </div>
+            <span class="info-text ms-2"><i class="bi bi-clock"></i> 更新: <span id="lastUpdate">--:--:--</span></span>
+            <span class="info-text"><i class="bi bi-stopwatch"></i> 运行: <span id="uptime">--:--:--</span></span>
         </div>
-    </nav>
-
-    <div class="container-fluid mt-4">
-        <!-- 顶部信息栏 -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <h5 class="mb-0">
-                    <i class="bi bi-activity"></i> 实时行情
-                    <span class="last-update ms-2" id="lastUpdate">最后更新: --:--:--</span>
-                </h5>
+        <div class="d-flex align-items-center">
+            <div class="status-indicator me-2">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="monitorStatusText">未启动</span>
             </div>
-            <div class="col-md-6 text-end">
-                <div class="dropdown d-inline-block me-3">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="nodeDropdown" data-bs-toggle="dropdown">
-                        <i class="bi bi-hdd-stack"></i> 数据节点: <span id="currentNodeName">云行情郑州主站Z1</span>
-                    </button>
-                    <ul class="dropdown-menu" id="nodeList">
-                        <!-- 动态生成 -->
-                    </ul>
+            <button class="btn btn-success btn-sm me-1" id="btnStart" onclick="startMonitor()"><i class="bi bi-play-fill"></i> 启动</button>
+            <button class="btn btn-danger btn-sm" id="btnStop" onclick="stopMonitor()" disabled><i class="bi bi-stop-fill"></i> 停止</button>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="main-content">
+        <!-- 行情卡片 -->
+        <div class="quote-row" id="stockCards"></div>
+
+        <!-- 配置表格 + 预警日志 -->
+        <div class="data-row">
+            <!-- 左：监控配置 -->
+            <div class="config-panel">
+                <div class="panel-header">
+                    <span><i class="bi bi-gear"></i> 监控配置</span>
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStockModal"><i class="bi bi-plus"></i> 添加</button>
                 </div>
-                <span class="text-muted">
-                    <i class="bi bi-clock"></i> 运行时长: <span id="uptime">--:--:--</span>
-                </span>
-            </div>
-        </div>
-
-        <!-- 实时行情卡片区域 -->
-        <div class="row mb-4" id="stockCards">
-            <!-- 动态生成 -->
-        </div>
-
-        <div class="row">
-            <!-- 左侧：监控配置 -->
-            <div class="col-lg-8">
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-gear"></i> 监控配置</span>
-                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
-                            <i class="bi bi-plus-lg"></i> 添加股票
-                        </button>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0 config-table">
-                                <thead>
-                                    <tr>
-                                        <th>股票</th>
-                                        <th>代码</th>
-                                        <th>当前价</th>
-                                        <th>目标价</th>
-                                        <th>涨跌幅</th>
-                                        <th>状态</th>
-                                        <th>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="configTableBody">
-                                    <!-- 动态生成 -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <div class="table-scroll">
+                    <table class="table table-hover config-table">
+                        <thead>
+                            <tr><th>股票</th><th>代码</th><th>当前价</th><th>目标价</th><th>涨跌幅</th><th>方向</th><th>状态</th><th>操作</th></tr>
+                        </thead>
+                        <tbody id="configTableBody"></tbody>
+                    </table>
                 </div>
             </div>
-
-            <!-- 右侧：预警日志 -->
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-bell"></i> 预警日志</span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="clearAlerts()">
-                            <i class="bi bi-trash"></i> 清空
-                        </button>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="alert-log" id="alertLog">
-                            <div class="alert-heartbeat">等待预警事件...</div>
-                        </div>
-                    </div>
+            <!-- 右：预警日志 -->
+            <div class="alert-panel">
+                <div class="panel-header">
+                    <span><i class="bi bi-bell"></i> 预警日志</span>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="clearAlerts()"><i class="bi bi-trash"></i> 清空</button>
+                </div>
+                <div class="alert-log" id="alertLog">
+                    <div class="alert-heartbeat">等待预警事件...</div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- 添加股票模态框 -->
-    <div class="modal fade" id="addStockModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">添加监控股票</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addStockForm">
-                        <div class="mb-3">
-                            <label class="form-label">股票代码</label>
-                            <input type="text" class="form-control" id="addCode" placeholder="如: sh601868" required>
-                            <div class="form-text">格式: sh+沪市代码 或 sz+深市代码</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">股票名称</label>
-                            <input type="text" class="form-control" id="addName" placeholder="如: 中国能建">
-                            <div class="form-text">可选，留空自动获取</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">目标价格</label>
-                            <input type="number" class="form-control" id="addTarget" step="0.01" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">监控方向</label>
-                            <select class="form-select" id="addDirection">
-                                <option value="below">跌破提醒</option>
-                                <option value="above">涨破提醒</option>
-                                <option value="both">双向提醒</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="addStock()">添加</button>
-                </div>
+<!-- 添加股票模态框 -->
+<div class="modal fade" id="addStockModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header py-2"><h6 class="modal-title">添加监控股票</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body py-2">
+                <form id="addStockForm">
+                    <div class="mb-2"><label class="form-label mb-0">股票代码</label><input type="text" class="form-control form-control-sm" id="addCode" placeholder="sh601868" required></div>
+                    <div class="mb-2"><label class="form-label mb-0">股票名称</label><input type="text" class="form-control form-control-sm" id="addName" placeholder="可选"></div>
+                    <div class="mb-2"><label class="form-label mb-0">目标价格</label><input type="number" class="form-control form-control-sm" id="addTarget" step="0.01" required></div>
+                    <div class="mb-2"><label class="form-label mb-0">监控方向</label>
+                        <select class="form-select form-select-sm" id="addDirection"><option value="below">跌破提醒</option><option value="above">涨破提醒</option><option value="both">双向提醒</option></select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer py-1"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button><button type="button" class="btn btn-primary btn-sm" onclick="addStock()">添加</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑股票模态框 -->
+<div class="modal fade" id="editStockModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header py-2"><h6 class="modal-title">编辑监控配置</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body py-2">
+                <form id="editStockForm">
+                    <input type="hidden" id="editIndex">
+                    <div class="mb-2"><label class="form-label mb-0">股票代码</label><input type="text" class="form-control form-control-sm" id="editCode" readonly></div>
+                    <div class="mb-2"><label class="form-label mb-0">股票名称</label><input type="text" class="form-control form-control-sm" id="editName"></div>
+                    <div class="mb-2"><label class="form-label mb-0">目标价格</label><input type="number" class="form-control form-control-sm" id="editTarget" step="0.01" required></div>
+                    <div class="mb-2"><label class="form-label mb-0">监控方向</label>
+                        <select class="form-select form-select-sm" id="editDirection"><option value="below">跌破提醒</option><option value="above">涨破提醒</option><option value="both">双向提醒</option></select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer py-1">
+                <button type="button" class="btn btn-danger btn-sm me-auto" onclick="deleteStock()"><i class="bi bi-trash"></i> 删除</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="saveEdit()">保存</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- 编辑股票模态框 -->
-    <div class="modal fade" id="editStockModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">编辑监控配置</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editStockForm">
-                        <input type="hidden" id="editIndex">
-                        <div class="mb-3">
-                            <label class="form-label">股票代码</label>
-                            <input type="text" class="form-control" id="editCode" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">股票名称</label>
-                            <input type="text" class="form-control" id="editName">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">目标价格</label>
-                            <input type="number" class="form-control" id="editTarget" step="0.01" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">监控方向</label>
-                            <select class="form-select" id="editDirection">
-                                <option value="below">跌破提醒</option>
-                                <option value="above">涨破提醒</option>
-                                <option value="both">双向提醒</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger me-auto" onclick="deleteStock()">
-                        <i class="bi bi-trash"></i> 删除
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveEdit()">保存</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- 自定义JS -->
-    <script src="/static/js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/main.js"></script>
 </body>
 </html>
