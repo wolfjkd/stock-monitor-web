@@ -1,0 +1,13 @@
+{
+  "interval": 5,
+  "source": "tdx",
+  "log": "reports/price_alert_watchlist.txt",
+  "alerts": [
+    {"code": "sh601868", "name": "中国能建", "target": 2.90, "dir": "below"},
+    {"code": "sh600170", "name": "上海建工", "target": 2.45, "dir": "below"},
+    {"code": "sh603077", "name": "和邦生物", "target": 2.00, "dir": "below"},
+    {"code": "sh601390", "name": "中国中铁", "target": 5.80, "dir": "below"},
+    {"code": "sz000061", "name": "农产品", "target": 6.50, "dir": "below"},
+    {"code": "sz000560", "name": "我爱我家", "target": 2.60, "dir": "below"}
+  ]
+}
