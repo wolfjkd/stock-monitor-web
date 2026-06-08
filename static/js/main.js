@@ -124,12 +124,12 @@ function renderConfigTable() {
             <tr class="${rowClass}">
                 <td><strong>${item.name || item.code}</strong></td>
                 <td><code>${item.code}</code></td>
+                <td class="${getPriceClass(changePct)}">${formatChange(changePct)}</td>
                 <td class="${getPriceClass(changePct)}">${formatPrice(price)}</td>
                 <td>${formatPrice(item.target)}</td>
-                <td class="${getPriceClass(changePct)}">${formatChange(changePct)}</td>
-                <td><span class="${dirClass}" style="font-size:11px">${dirLabel}</span></td>
                 <td><span class="${positionClass}" style="font-size:11px">${position}</span></td>
                 <td><span class="status-badge ${status.class}" style="font-size:10px">${status.text}</span></td>
+                <td><span class="${dirClass}" style="font-size:11px">${dirLabel}</span></td>
                 <td>
                     <button class="btn btn-outline-primary" onclick="editStock(${index})">
                         <i class="bi bi-pencil"></i>
