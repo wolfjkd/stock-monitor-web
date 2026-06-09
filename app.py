@@ -92,7 +92,7 @@ def fetch_quote(code, source='tdx'):
 
 
 def monitor_loop():
-    """监控主循环"""
+    """监控主循环（带自动重连）"""
     global quotes_cache
 
     config = load_config()
@@ -103,79 +103,111 @@ def monitor_loop():
     print(f'[Monitor] Starting with {len(alerts)} stocks, source={source}, interval={interval}s')
 
     alert_cooldown = {}
+    consecutive_errors = 0
+    max_consecutive_errors = 10
 
     while monitor_state['running']:
         now_str = datetime.datetime.now().strftime('%H:%M:%S')
+        loop_success = False
 
-        for item in alerts:
-            code = item['code']
-            target = item['target']
-            direction = item.get('dir', 'below')
-            name = item.get('name', code)
+        try:
+            for item in alerts:
+                if not monitor_state['running']:
+                    break
 
-            try:
-                q = fetch_quote(code, source)
-                if q is None:
-                    continue
+                code = item['code']
+                target = item['target']
+                direction = item.get('dir', 'below')
+                name = item.get('name', code)
 
-                price = q.get('price')
-                if price is None:
-                    continue
+                try:
+                    q = fetch_quote(code, source)
+                    if q is None:
+                        continue
 
-                # 更新缓存
-                quotes_cache[code] = {
-                    'name': name,
-                    'code': code,
-                    'price': price,
-                    'change_pct': q.get('change_pct'),
-                    'yest_close': q.get('yest_close'),
-                    'open': q.get('open'),
-                    'high': q.get('high'),
-                    'low': q.get('low'),
-                    'volume': q.get('volume'),
-                    'amount': q.get('amount'),
-                    'target': target,
-                    'direction': direction,
-                    'last_update': now_str
-                }
+                    price = q.get('price')
+                    if price is None:
+                        continue
 
-                # 检查是否触发预警
-                triggered = False
-                reason = ''
+                    loop_success = True
 
-                if direction in ('below', 'both') and price <= target:
-                    triggered = True
-                    reason = f'{name}({code}) 跌破 {target} | 当前: {price:.2f}'
-                if direction in ('above', 'both') and price >= target:
-                    triggered = True
-                    reason = f'{name}({code}) 涨破 {target} | 当前: {price:.2f}'
+                    # 更新缓存
+                    quotes_cache[code] = {
+                        'name': name,
+                        'code': code,
+                        'price': price,
+                        'change_pct': q.get('change_pct'),
+                        'yest_close': q.get('yest_close'),
+                        'open': q.get('open'),
+                        'high': q.get('high'),
+                        'low': q.get('low'),
+                        'volume': q.get('volume'),
+                        'amount': q.get('amount'),
+                        'target': target,
+                        'direction': direction,
+                        'last_update': now_str
+                    }
 
-                if triggered:
-                    cooldown_key = f'{code}_{direction}'
-                    last_alert_time = alert_cooldown.get(cooldown_key, 0)
-                    current_time = time.time()
+                    # 检查是否触发预警
+                    triggered = False
+                    reason = ''
 
-                    if current_time - last_alert_time >= 60:
-                        alert_line = f'[{now_str}] *** ALERT *** {reason}'
-                        print(alert_line)
+                    if direction in ('below', 'both') and price <= target:
+                        triggered = True
+                        reason = f'{name}({code}) 跌破 {target} | 当前: {price:.2f}'
+                    if direction in ('above', 'both') and price >= target:
+                        triggered = True
+                        reason = f'{name}({code}) 涨破 {target} | 当前: {price:.2f}'
 
-                        # 推送到SSE队列
-                        alert_data = {
-                            'time': now_str,
-                            'type': 'alert',
-                            'message': reason,
-                            'code': code,
-                            'price': price
-                        }
-                        try:
-                            alert_queue.put_nowait(alert_data)
-                        except queue.Full:
-                            pass
+                    if triggered:
+                        cooldown_key = f'{code}_{direction}'
+                        last_alert_time = alert_cooldown.get(cooldown_key, 0)
+                        current_time = time.time()
 
-                        alert_cooldown[cooldown_key] = current_time
+                        if current_time - last_alert_time >= 60:
+                            alert_line = f'[{now_str}] *** ALERT *** {reason}'
+                            print(alert_line)
 
-            except Exception as e:
-                print(f'[Monitor] Error for {code}: {e}')
+                            # 推送到SSE队列
+                            alert_data = {
+                                'time': now_str,
+                                'type': 'alert',
+                                'message': reason,
+                                'code': code,
+                                'price': price
+                            }
+                            try:
+                                alert_queue.put_nowait(alert_data)
+                            except queue.Full:
+                                pass
+
+                            alert_cooldown[cooldown_key] = current_time
+
+                except Exception as e:
+                    print(f'[Monitor] Error for {code}: {e}')
+
+            # 重置连续错误计数
+            if loop_success:
+                consecutive_errors = 0
+            else:
+                consecutive_errors += 1
+
+        except Exception as e:
+            print(f'[Monitor] Loop error: {e}')
+            consecutive_errors += 1
+
+            # 连续错误过多，尝试重连TDX
+            if consecutive_errors >= max_consecutive_errors:
+                print(f'[Monitor] Too many errors ({consecutive_errors}), reconnecting TDX...')
+                try:
+                    close_tdx_client()
+                    time.sleep(2)
+                    # 重新加载配置（可能已更新）
+                    config = load_config()
+                    alerts = config.get('alerts', [])
+                    consecutive_errors = 0
+                except Exception as reconnect_error:
+                    print(f'[Monitor] Reconnect failed: {reconnect_error}')
 
         time.sleep(interval)
 

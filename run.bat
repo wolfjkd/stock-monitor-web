@@ -7,6 +7,7 @@ echo ========================================
 echo.
 
 set PYTHON=C:\Users\wolfj\.workbuddy\binaries\python\versions\3.13.12\python.exe
+set SCRIPT_DIR=%~dp0
 
 REM Check Python
 "%PYTHON%" --version >nul 2>&1
@@ -27,5 +28,10 @@ echo [INFO] Starting server at http://localhost:5000
 echo [INFO] Press Ctrl+C to stop
 echo.
 
+:loop
+echo [%date% %time%] Starting monitor...
+cd /d "%SCRIPT_DIR%"
 "%PYTHON%" app.py
-pause
+echo [%date% %time%] Monitor exited, restarting in 5 seconds...
+timeout /t 5 /nobreak >nul
+goto loop
