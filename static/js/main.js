@@ -115,7 +115,7 @@ function renderConfigTable() {
     tbody.innerHTML = currentConfig.alerts.map((item, index) => {
         const quote = window.quotesCache ? window.quotesCache[item.code] : null;
         const price = quote ? quote.price : '--';
-        const changePct = quote ? quote.changePct : null;
+        const changePct = quote ? quote.change_pct : null;
         const status = getStatus(item, quote);
         const dir = item.dir || 'below';
         const dirLabel = dir === 'below' ? '跌破' : dir === 'above' ? '涨破' : '双向';
@@ -218,7 +218,7 @@ function renderStockCards() {
         }
 
         const price = quote.price;
-        const changePct = quote.changePct;
+        const changePct = quote.change_pct;
         const priceClass = getPriceClass(changePct);
 
         // 检查是否触发预警
